@@ -97,6 +97,43 @@ Before you begin, ensure you have the following installed:
 - Kafka 3.x
 - Zookeeper 3.x
 
+## Installation (Docker)
+
+### Prerequisites
+- Docker and WSL(Windows) installed on your machine.
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/yourusername/go-gin.git
+cd go-gin
+```
+### 2. Create a `.env` File  
+Create a `.env` file in the project root with the following variables:
+```bash
+DB_DSN_crm=host=ejhfie user=postgres  password=nnnf dbname=railway port=16683 sslmode=require
+REDIS_ADDR=redis:6379
+PORT=3000
+JWT_SECRET=lkjhgfdsapoiuytrewq987654321
+KAFKA_BROKERS=kafka:9092
+APP_ENV=development
+```
+
+### 3. Start Docker Compose
+```bash
+# for up and running the application
+docker-compose -f docker-compose.yml up --build
+
+# for stopping the application
+docker-compose -f docker-compose.yml down
+
+# for going into the container
+docker exec -it go-gin sh
+ls -la
+
+# for adding new packages
+docker exec -it go-gin sh -c "go get github.com/your/package"
+```
+
 ## Installation
 
 ### 1. Database Setup

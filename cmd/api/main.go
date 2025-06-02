@@ -59,7 +59,7 @@ func runServer() {
 	}
 
 	// Get CRM database
-	crmDB, err := database.GetDB("crm")
+	crmDB, err := database.GetDB("gin")
 	if err != nil {
 		log.Fatal(err)
 	}

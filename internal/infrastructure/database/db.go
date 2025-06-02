@@ -109,11 +109,11 @@ func InitRedis() {
 	log.Println("Redis connected successfully")
 }
 
-// InitAllDatabases initializes both CRM and IMS databases
+// InitAllDatabases initializes Gin databases
 func InitAllDatabases() error {
-	// Initialize CRM database
-	if err := InitDB("crm"); err != nil {
-		return fmt.Errorf("failed to initialize CRM database: %v", err)
+	// Initialize Gin database
+	if err := InitDB("gin"); err != nil {
+		return fmt.Errorf("failed to initialize Gin database: %v", err)
 	}
 
 	// Initialize IMS database
