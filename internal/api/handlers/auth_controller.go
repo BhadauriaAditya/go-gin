@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"context"
-	"go-crm/internal/service"
+	"go-gin/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

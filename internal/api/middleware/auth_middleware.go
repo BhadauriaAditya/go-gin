@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"go-crm/internal/service"
+	"go-gin/internal/service"
 	"net/http"
 	"strings"
 

@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"errors"
-	"go-crm/internal/domain/models"
-	"go-crm/internal/domain/repository"
-	"go-crm/internal/infrastructure/kafka"
-	"go-crm/pkg/utils"
+	"go-gin/internal/domain/models"
+	"go-gin/internal/domain/repository"
+	"go-gin/internal/infrastructure/kafka"
+	"go-gin/pkg/utils"
 
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"

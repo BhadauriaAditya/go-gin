@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"go-crm/internal/api/handlers"
+	"go-gin/internal/api/handlers"
 
 	"github.com/gin-gonic/gin"
 )

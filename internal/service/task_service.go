@@ -1,8 +1,8 @@
 package service
 
 import (
-	"go-crm/internal/domain/models"
-	"go-crm/internal/domain/repository"
+	"go-gin/internal/domain/models"
+	"go-gin/internal/domain/repository"
 )
 
 type TaskService struct {

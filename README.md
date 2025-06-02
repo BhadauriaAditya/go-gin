@@ -166,8 +166,8 @@ SENTRY_DSN=your_sentry_dsn
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/go-crm.git
-cd go-crm
+git clone https://github.com/yourusername/go-gin.git
+cd go-gin
 
 # Install dependencies
 go mod download
@@ -187,10 +187,10 @@ go run main.go
 ### Production Mode
 ```bash
 # Build the application
-go build -o go-crm
+go build -o go-gin
 
 # Run the application
-./go-crm
+./go-gin
 ```
 
 ## API Endpoints

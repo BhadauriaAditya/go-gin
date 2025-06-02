@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"go-crm/internal/domain/models"
+	"go-gin/internal/domain/models"
 
 	"gorm.io/gorm"
 )

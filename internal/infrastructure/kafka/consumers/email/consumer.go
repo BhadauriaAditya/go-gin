@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"log"
 
-	"go-crm/internal/domain/models"
-	"go-crm/internal/infrastructure/kafka"
+	"go-gin/internal/domain/models"
+	"go-gin/internal/infrastructure/kafka"
 )
 
 type EmailConsumer struct {

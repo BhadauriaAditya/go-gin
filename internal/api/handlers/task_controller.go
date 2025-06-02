@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"go-crm/internal/domain/models"
-	"go-crm/internal/service"
+	"go-gin/internal/domain/models"
+	"go-gin/internal/service"
 	"net/http"
 	"strconv"
 

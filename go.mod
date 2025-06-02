@@ -1,4 +1,4 @@
-module go-crm
+module go-gin
 
 go 1.24.3
 
