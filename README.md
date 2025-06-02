@@ -1,86 +1,241 @@
-Perfect — since you're prioritizing:
+# Go CRM
 
-* A Laravel-style modular layout
-* REST API with Gin
-* GORM + PostgreSQL
-* Redis
-* Cron jobs & job queues
-* gRPC support
-* CLI-only usage
-* Structure inspired by [golang-standards/project-layout](https://github.com/golang-standards/project-layout)
+A Gin boilerplate with multi-database support, event-driven architecture, and modern best practices.
 
-I'll combine those requirements into a clean, production-grade project layout, tailored for `/home/aditya/backend/go-gin`.
+## Features
 
----
+- Gin Framework - Fast and efficient HTTP server
+- Multi-Database Support - PostgreSQL with multiple database connections
+- Event-Driven - Kafka integration for event handling
+- Authentication - JWT-based authentication with Redis session store
+- Structured Logging - Logrus with Sentry integration
+- CLI Support - Cobra-based command-line interface
+- Clean Architecture - Well-organized project structure
+- API Documentation - Swagger/OpenAPI support (coming soon)
 
-## ✅ Final Project Structure
+## Project Structure
 
-We’ll base this on `golang-standards/project-layout`, adjusted to support REST (Gin), gRPC, jobs, queues, and modular domains.
+The project follows the standard Go project layout with a focus on clean architecture principles:
 
 ```
-go-gin/
-├── api/
-│   ├── grpc/                 # gRPC proto files and generated code
-│   └── rest/                 # REST-specific handlers and routes
-│       ├── handler/          # Gin handlers
-│       └── router.go         # Route definitions
-├── cmd/
-│   ├── server/               # Main entry for REST server
-│   │   └── main.go
-│   └── worker/               # Main entry for background jobs/queues
-│       └── main.go
-├── configs/                  # config loader and env files
-│   ├── config.go
-│   └── dev.env
-├── internal/
-│   ├── app/                  # All business logic (modular)
-│   │   └── user/             # Example: User module
-│   │       ├── handler/      # gRPC and REST handlers
-│   │       ├── model/        # DB models
-│   │       ├── repo/         # DB access
-│   │       ├── service/      # Business logic
-│   │       └── dto/          # Data transfer objects
-│   └── jobs/                 # Cronjobs / background jobs
-│       └── userCleanup.go
-├── pkg/                      # Reusable libraries
-│   └── logger/               # Centralized logging
-├── scripts/                  # Dev tools, db migration, etc.
-│   └── migrate.sh
-├── proto/                    # .proto files (source of truth)
-│   └── user.proto
-├── test/                     # Test helpers and integration tests
-├── go.mod
-├── go.sum
-├── Makefile
-├── README.md
-└── setup.sql
+.
+├── cmd/                    # Main applications
+│   └── api/               # API server entry point
+├── internal/              # Private application code
+│   ├── api/              # API layer
+│   │   ├── handlers/     # HTTP handlers
+│   │   ├── middleware/   # HTTP middleware
+│   │   └── routes/       # Route definitions
+│   ├── domain/           # Domain layer
+│   │   ├── models/       # Domain models
+│   │   └── repository/   # Repository interfaces
+│   ├── service/          # Business logic layer
+│   └── infrastructure/   # Infrastructure layer
+│       ├── database/     # Database implementations
+│       ├── kafka/        # Kafka implementations
+│       └── config/       # Configuration
+└── pkg/                  # Public library code
+    └── utils/           # Public utility functions
 ```
 
----
+### Structure Benefits
 
-## 📌 Notes About Structure
+1. Clear Separation of Concerns
+   - `cmd/`: Contains only the main application entry points
+   - `internal/`: Contains all private application code
+   - `pkg/`: Contains code that can be used by external applications
 
-| Folder/File         | Purpose                                                        |
-| ------------------- | -------------------------------------------------------------- |
-| `api/rest`          | Gin-based HTTP routes and handlers                             |
-| `api/grpc`          | gRPC server and generated stubs                                |
-| `internal/app/user` | A sample domain structure (you can copy this for more modules) |
-| `internal/jobs`     | Cron jobs and queue workers                                    |
-| `cmd/server`        | Starts your REST server                                        |
-| `cmd/worker`        | Starts job/queue consumers                                     |
-| `proto/`            | Proto definitions for gRPC                                     |
-| `pkg/logger`        | Common logger (e.g., using logrus/zap)                         |
-| `scripts/`          | Shell scripts for database migration etc.                      |
+2. Domain-Driven Design
+   - `domain/`: Contains core business logic and models
+   - `service/`: Implements business logic using domain models
+   - `repository/`: Defines interfaces for data access
 
----
+3. Infrastructure Isolation
+   - All external dependencies (database, kafka, etc.) are in `infrastructure/`
+   - Easy to swap implementations without affecting business logic
+   - Clear dependency direction: infrastructure → service → domain
 
-## ✅ Next Step
+4. API Layer Organization
+   - `api/`: Contains all HTTP-related code
+   - Clear separation between handlers, middleware, and routes
+   - Easy to maintain and extend API endpoints
 
-Let me know which one you'd like me to do next:
+### Development Guidelines
 
-1. ✅ Setup a simple REST API (Gin)
-2. ✅ Setup GORM + PostgreSQL
-3. ✅ Add Redis integration
-4. ✅ Add Cron job demo
-5. ✅ Setup gRPC with `.proto` + generated Go code
-6. ✅ Job queue (e.g., Redis + Go routine)
+When adding new features, follow these principles:
+
+1. Domain Models
+   - Place in `internal/domain/models`
+   - Keep models pure and free of infrastructure concerns
+   - Use interfaces to define contracts
+
+2. Business Logic
+   - Place in `internal/service`
+   - Use domain models and repository interfaces
+   - Keep services focused on business rules
+
+3. API Handlers
+   - Place in `internal/api/handlers`
+   - Keep handlers thin, delegating to services
+   - Use middleware for cross-cutting concerns
+
+4. Infrastructure
+   - Place in `internal/infrastructure`
+   - Implement repository interfaces
+   - Handle external service interactions
+
+5. Public Utilities
+   - Place in `pkg/` only if needed by external applications
+   - Keep `internal/` for application-specific code
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+- Go 1.24 or higher
+- PostgreSQL 15 or higher
+- Redis 7 or higher
+- Kafka 3.x
+- Zookeeper 3.x
+
+## Installation
+
+### 1. Database Setup
+
+#### PostgreSQL
+```bash
+# Install PostgreSQL (if not already installed)
+brew install postgresql@15
+
+# Start PostgreSQL service
+brew services start postgresql@15
+
+# Create databases
+createdb go_crm_crm
+createdb go_crm_ims
+```
+
+### 2. Redis Setup
+```bash
+# Install Redis
+brew install redis
+
+# Start Redis service
+brew services start redis
+```
+
+### 3. Kafka Setup
+```bash
+# Install Kafka
+brew install kafka
+
+# Start Zookeeper
+brew services start zookeeper
+
+# Start Kafka
+brew services start kafka
+
+# Create required Kafka topics
+kafka-topics --create --topic user.created --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+```
+
+### 4. Environment Setup
+
+Create a `.env` file in the project root with the following variables:
+
+```bash
+# App Configuration
+APP_ENV=development
+PORT=8080
+JWT_SECRET=your_jwt_secret_key
+
+# Database Configuration
+DB_DSN_crm=postgresql://localhost:5432/go_crm_crm?user=your_username&password=your_password
+DB_DSN_ims=postgresql://localhost:5432/go_crm_ims?user=your_username&password=your_password
+
+# Redis Configuration
+REDIS_ADDR=localhost:6379
+
+# Kafka Configuration
+KAFKA_BROKERS=localhost:9092
+
+# Sentry Configuration (Optional)
+SENTRY_DSN=your_sentry_dsn
+```
+
+### 5. Project Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/go-crm.git
+cd go-crm
+
+# Install dependencies
+go mod download
+
+# Run database migrations
+go run main.go
+```
+
+## Running the Application
+
+### Development Mode
+```bash
+# Run the server
+go run main.go
+```
+
+### Production Mode
+```bash
+# Build the application
+go build -o go-crm
+
+# Run the application
+./go-crm
+```
+
+## API Endpoints
+
+### Public Routes
+- `POST /register` - Register a new user
+- `POST /login` - User login
+- `GET /users` - Get all users
+
+### Protected Routes
+- `POST /api/tasks` - Create a new task
+- `GET /api/tasks` - Get all tasks
+- `PUT /api/tasks/:id` - Update a task
+- `DELETE /api/tasks/:id` - Delete a task
+
+## CLI Commands
+
+```bash
+# Send task reminders
+go run main.go task:send-reminders
+```
+
+
+## Gin Framework Features
+
+- Middleware Support
+  - JWT Authentication
+  - CORS
+  - Request Logging
+  - Error Handling
+
+- Route Groups
+  - Public Routes
+  - Protected Routes
+  - API Versioning
+
+- Error Handling
+  - Centralized Error Handling
+  - Custom Error Responses
+  - Validation Errors
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/xyz-feature`)
+3. Commit your changes (`git commit -m 'Add some xyz feature'`)
+4. Push to the branch (`git push origin feature/xyz-feature`)
+5. Open a Pull Request
