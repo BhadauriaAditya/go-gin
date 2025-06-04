@@ -1,30 +1,29 @@
 package middleware
 
 import (
-	"go-gin/internal/service"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
+	"go-gin/internal/service"
 )
 
-type AuthMiddleware struct {
-	authService *service.AuthService
-}
-
-func NewAuthMiddleware(authService *service.AuthService) *AuthMiddleware {
-	return &AuthMiddleware{authService}
-}
-
-func (a *AuthMiddleware) JWTAuth() gin.HandlerFunc {
+func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
-		userID, err := a.authService.VerifyToken(c, token)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		tokenStr := c.GetHeader("Authorization")
+		if tokenStr == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing Authorization header"})
+			c.Abort()
 			return
 		}
-		c.Set("userID", userID)
+
+		claims, err := service.ValidateJWT(tokenStr)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.Abort()
+			return
+		}
+
+		c.Set("email", claims["email"])
 		c.Next()
 	}
 }

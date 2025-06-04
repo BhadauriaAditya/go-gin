@@ -7,15 +7,24 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var Config struct {
+// Define a struct type
+type Config struct {
 	DSN string
 }
 
-func LoadEnv() {
+// Global variable to hold loaded config
+var AppConfig *Config
+
+func LoadEnv() *Config {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	Config.DSN = os.Getenv("DB_DSN")
+	cfg := &Config{
+		DSN: os.Getenv("DB_DSN"),
+	}
+
+	AppConfig = cfg
+	return cfg
 }

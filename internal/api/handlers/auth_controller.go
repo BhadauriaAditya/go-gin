@@ -1,54 +1,54 @@
 package handlers
 
 import (
-	"context"
-	"go-gin/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+
+	"go-gin/internal/domain/models"
+	"go-gin/internal/infrastructure/database"
+	"go-gin/internal/domain/repository"	
+	"go-gin/internal/service"
 )
 
-type AuthHandler struct {
-	service *service.AuthService
+type AuthRequest struct {
+	Email string `json:"email"`
+	Password string `json:"password"`
 }
 
-func NewAuthHandler(service *service.AuthService) *AuthHandler {
-	return &AuthHandler{service}
-}
-
-func (a *AuthHandler) Register(c *gin.Context) {
-	var req struct{ Username, Password string }
-	if c.ShouldBindJSON(&req) != nil {
+func Register(c *gin.Context) {
+	var req AuthRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
-	err := a.service.Register(req.Username, req.Password)
-	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
+
+	hash, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	user := &models.User{Email: req.Email, Password: string(hash)}
+
+	db, _ := database.GetDB("gin")
+	if err := repository.CreateUser(db, user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register"})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"message": "Registered successfully"})
+	c.JSON(http.StatusCreated, gin.H{"message": "User registered"})
 }
 
-func (a *AuthHandler) Login(c *gin.Context) {
-	var req struct{ Username, Password string }
-	if c.ShouldBindJSON(&req) != nil {
+func Login(c *gin.Context) {
+	var req AuthRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
-	token, err := a.service.Login(context.Background(), req.Username, req.Password)
-	if err != nil {
+
+	db, _ := database.GetDB("gin")
+	user, err := repository.GetUserByEmail(db, req.Email)
+	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)) != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"token": token})
-}
 
-func (a *AuthHandler) Users(c *gin.Context) {
-	users, err := a.service.GetAllUsers()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get users"})
-		return
-	}
-	c.JSON(http.StatusOK, users)
+	token, _ := service.GenerateJWT(user.Email)
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }

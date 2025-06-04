@@ -1,60 +1,36 @@
 package service
 
 import (
-	"context"
-	"errors"
-	"go-gin/internal/domain/models"
-	"go-gin/internal/domain/repository"
-	"go-gin/internal/infrastructure/kafka"
-	"go-gin/pkg/utils"
+	"os"
+	"time"
 
-	"github.com/redis/go-redis/v9"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-type AuthService struct {
-	repo     *repository.UserRepository
-	redis    *redis.Client
-	producer *kafka.Producer
+var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+
+func GenerateJWT(username string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": username,
+		"exp":      time.Now().Add(24 * time.Hour).Unix(),
+	})
+
+	return token.SignedString(jwtSecret)
 }
 
-func NewAuthService(repo *repository.UserRepository, redis *redis.Client, producer *kafka.Producer) *AuthService {
-	return &AuthService{repo, redis, producer}
-}
+func ValidateJWT(tokenStr string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+		return jwtSecret, nil
+	})
 
-func (s *AuthService) Register(email, password string) error {
-	hashed, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	user := &models.User{Email: email, Password: string(hashed)}
-
-	if err := s.repo.Create(user); err != nil {
-		return err
+	if err != nil || !token.Valid {
+		return nil, err
 	}
 
-	// Send user created event to Kafka
-	ctx := context.Background()
-	if err := s.producer.SendMessage(ctx, kafka.TopicUserCreated, user.Email, user); err != nil {
-		// Log the error but don't fail the registration
-		// TODO: Add proper logging
-		return nil
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, err
 	}
 
-	return nil
-}
-
-func (s *AuthService) Login(ctx context.Context, email, password string) (string, error) {
-	user, err := s.repo.FindByEmail(email)
-	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		return "", errors.New("invalid credentials")
-	}
-	token, _ := utils.GenerateJWT(user.ID)
-	s.redis.Set(ctx, token, user.ID, 0)
-	return token, nil
-}
-
-func (s *AuthService) VerifyToken(ctx context.Context, token string) (uint, error) {
-	return utils.ParseJWT(token)
-}
-
-func (s *AuthService) GetAllUsers() ([]models.User, error) {
-	return s.repo.GetAll()
+	return claims, nil
 }
